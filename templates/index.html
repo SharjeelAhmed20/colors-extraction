@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Extraction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .color-box {
+            width: 100px;
+            height: 100px;
+            display: inline-block;
+            margin: 10px;
+        }
+        .color-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .color-info {
+            text-align: center;
+            margin-top: 5px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Extract Colors from Image</h1>
+    <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" id="image" required />
+        <button type="submit">Upload Image</button>
+    </form>
+
+    <div id="color-results" class="color-list"></div>
+</div>
+
+<script>
+    // Handling form submission and displaying the extracted colors
+    const form = document.getElementById('upload-form');
+    const colorResults = document.getElementById('color-results');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();  // Prevent default form submission
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
+            }
+
+            const data = await response.json();
+
+            // Clear previous color results
+            colorResults.innerHTML = '';
+
+            // Display the colors
+            data.colors.forEach(color => {
+                const colorBox = document.createElement('div');
+                colorBox.classList.add('color-box');
+
+                // Format the RGB values correctly
+                const rgbColor = `rgb(${color.color[0]}, ${color.color[1]}, ${color.color[2]})`;
+                colorBox.style.backgroundColor = rgbColor;
+
+                const colorInfo = document.createElement('div');
+                colorInfo.classList.add('color-info');
+                colorInfo.innerText = `RGB(${color.color[0]}, ${color.color[1]}, ${color.color[2]})\nCount: ${color.count}`;
+
+                const colorContainer = document.createElement('div');
+                colorContainer.appendChild(colorBox);
+                colorContainer.appendChild(colorInfo);
+                colorResults.appendChild(colorContainer);
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while processing the image');
+        }
+    });
+</script>
+
+</body>
+</html>
